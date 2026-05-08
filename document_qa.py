@@ -291,7 +291,7 @@ class DocumentQA:
 
     def __init__(self,
                  doc_directory: str,
-                 api_key: str = None,
+                 api_key: str | None = None,
                  model: str = 'gemini-2.5-flash',
                  chunk_size: int = 512,
                  chunk_overlap: int = 50,
@@ -335,7 +335,7 @@ class DocumentQA:
             self.llm = None
             print("Warning: Gemini not available. Set GOOGLE_API_KEY for answer generation.")
 
-    def search(self, query: str, top_k: int = None):
+    def search(self, query: str, top_k: int | None = None):
         """
         Search for relevant document chunks.
 
@@ -353,7 +353,7 @@ class DocumentQA:
             return retriever.retrieve(query)
         return self.retriever.retrieve(query)
 
-    def answer_question(self, question: str, top_k: int = None) -> Dict[str, Any]:
+    def answer_question(self, question: str, top_k: int | None = None) -> Dict[str, Any]:
         """
         Answer a question using the full RAG pipeline.
 
