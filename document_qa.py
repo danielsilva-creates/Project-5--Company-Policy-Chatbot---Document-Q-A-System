@@ -430,19 +430,19 @@ class DocumentQA:
         }
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # Quick test (uncomment to run after implementing TODOs)
-    qa = DocumentQA('data/policies')
-    print(qa.get_stats())
+    # qa = DocumentQA('data/policies')
+    # print(qa.get_stats())
     
-    # Test search (works without API key)
-    results = qa.search("How many vacation days do I get?")
-    for r in results:
-        print(f"  [{r.score:.3f}] {r.node.metadata.get('file_name')}")
-        print(f"    {r.node.text[:100]}...")
+    # # Test search (works without API key)
+    # results = qa.search("How many vacation days do I get?")
+    # for r in results:
+    #     print(f"  [{r.score:.3f}] {r.node.metadata.get('file_name')}")
+    #     print(f"    {r.node.text[:100]}...")
     
-    # Test full pipeline (requires GOOGLE_API_KEY)
-    result = qa.answer_question("What is the remote work policy?")
-    print(f"Answer: {result['answer']}")
-    print(f"Sources: {result['sources']}")
-    pass
+    # # Test full pipeline (requires GOOGLE_API_KEY)
+    # result = qa.answer_question("What is the remote work policy?")
+    # print(f"Answer: {result['answer']}")
+    # print(f"Sources: {result['sources']}")
+    # pass
