@@ -183,7 +183,7 @@ def build_index(documents, embed_model, splitter):
 
 
 # ---------------------------------------------------------------------------
-# TODO 5: Create retriever
+# TODO 5: Create retriever - COMPLETE
 # ---------------------------------------------------------------------------
 
 def create_retriever(index, top_k: int = 3):
@@ -212,7 +212,8 @@ def create_retriever(index, top_k: int = 3):
             print(f"Source: {node.node.metadata['file_name']}")
             print(f"Text: {node.node.text[:100]}...")
     """
-    pass  # Replace with your implementation
+    retriever = index.as_retriever(similarity_top_k=top_k)
+    return retriever
 
 
 # ---------------------------------------------------------------------------
