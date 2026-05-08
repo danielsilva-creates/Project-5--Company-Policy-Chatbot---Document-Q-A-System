@@ -7,7 +7,7 @@ in a vector index, and generates answers using Google Gemini.
 
 Uses LlamaIndex as the RAG framework with:
 - HuggingFace BAAI/bge-small-en-v1.5 for embeddings (runs locally, free)
-- Google Gemini gemini-2.0-flash for answer generation
+- Google Gemini gemini-2.5-flash for answer generation
 
 Students implement 7 functions to build a complete RAG pipeline:
 1. Load documents using SimpleDirectoryReader
@@ -217,7 +217,7 @@ def create_retriever(index, top_k: int = 3):
 
 
 # ---------------------------------------------------------------------------
-# TODO 6: Format RAG prompt
+# TODO 6: Format RAG prompt - COMPLETE
 # ---------------------------------------------------------------------------
 
 def format_prompt(question: str, retrieved_nodes) -> str:
@@ -254,7 +254,24 @@ def format_prompt(question: str, retrieved_nodes) -> str:
         prompt = format_prompt("How many vacation days?", nodes)
         # prompt starts with instructions, then context, then question
     """
-    pass  # Replace with your implementation
+    instruction = """
+        You are a company policy assistant for Nexus Technologies Inc.
+        Answer ONLY using the provided policy excerpts.
+        Cite the source document for each fact.
+        If the answer is not in the context, provide the following response: "The answer is not available in the provided context."
+    """
+
+    context = "Context:\n"
+    for node in retrieved_nodes:
+        filename = node.node.metadata.get('file_name', 'Unknown')
+        score = node.score
+        text = node.node.text
+        context += f"Source: {filename} (relevance: {score:.3f})\n{text}\n\n"
+
+    question_part = f"Question: {question}\n\nAnswer:"
+
+    prompt = instruction + context + question_part
+    return prompt
 
 
 # ---------------------------------------------------------------------------
@@ -275,7 +292,7 @@ class DocumentQA:
     def __init__(self,
                  doc_directory: str,
                  api_key: str = None,
-                 model: str = 'gemini-2.0-flash',
+                 model: str = 'gemini-2.5-flash',
                  chunk_size: int = 512,
                  chunk_overlap: int = 50,
                  top_k: int = 3):
@@ -367,7 +384,23 @@ class DocumentQA:
             print(result['answer'])
             print(result['sources'])  # ['pto_policy.txt']
         """
-        pass  # Replace with your implementation
+        retrieved_nodes = self.search(question, top_k)
+        prompt = format_prompt(question, retrieved_nodes)
+
+        if self.llm is not None:
+            response = self.llm.complete(prompt)
+            answer = response.text
+        else:
+            answer = "Answer generation requires Google Gemini. Please set GOOGLE_API_KEY."
+
+        sources = list({node.node.metadata.get('file_name', 'Unknown') for node in retrieved_nodes})
+
+        return {
+            'answer': answer,
+            'sources': sources,
+            'chunks_used': len(retrieved_nodes),
+            'nodes': retrieved_nodes
+        }
 
     def get_stats(self) -> Dict[str, Any]:
         """
@@ -399,17 +432,17 @@ class DocumentQA:
 
 if __name__ == '__main__':
     # Quick test (uncomment to run after implementing TODOs)
-    # qa = DocumentQA('data/policies')
-    # print(qa.get_stats())
-    #
-    # # Test search (works without API key)
-    # results = qa.search("How many vacation days do I get?")
-    # for r in results:
-    #     print(f"  [{r.score:.3f}] {r.node.metadata.get('file_name')}")
-    #     print(f"    {r.node.text[:100]}...")
-    #
-    # # Test full pipeline (requires GOOGLE_API_KEY)
-    # result = qa.answer_question("What is the remote work policy?")
-    # print(f"Answer: {result['answer']}")
-    # print(f"Sources: {result['sources']}")
+    qa = DocumentQA('data/policies')
+    print(qa.get_stats())
+    
+    # Test search (works without API key)
+    results = qa.search("How many vacation days do I get?")
+    for r in results:
+        print(f"  [{r.score:.3f}] {r.node.metadata.get('file_name')}")
+        print(f"    {r.node.text[:100]}...")
+    
+    # Test full pipeline (requires GOOGLE_API_KEY)
+    result = qa.answer_question("What is the remote work policy?")
+    print(f"Answer: {result['answer']}")
+    print(f"Sources: {result['sources']}")
     pass
