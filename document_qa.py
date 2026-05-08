@@ -44,7 +44,7 @@ load_dotenv()
 
 
 # ---------------------------------------------------------------------------
-# TODO 1: Load documents
+# TODO 1: Load documents - COMPLETE
 # ---------------------------------------------------------------------------
 
 def load_documents(directory: str):
@@ -70,11 +70,15 @@ def load_documents(directory: str):
         print(len(docs))  # 6
         print(docs[0].metadata['file_name'])  # 'remote_work_policy.txt'
     """
-    pass  # Replace with your implementation
+    # Load documents using SimpleDirectoryReader
+    reader = SimpleDirectoryReader(input_dir=directory, required_exts=[".txt"])
+    documents = reader.load_data()
+    print(f"Loaded {len(documents)} documents from {directory}")
+    return documents
 
 
 # ---------------------------------------------------------------------------
-# TODO 2: Configure chunking
+# TODO 2: Configure chunking - COMPLETE
 # ---------------------------------------------------------------------------
 
 def configure_splitter(chunk_size: int = 512, chunk_overlap: int = 50):
@@ -99,11 +103,12 @@ def configure_splitter(chunk_size: int = 512, chunk_overlap: int = 50):
     Example:
         splitter = configure_splitter(chunk_size=512, chunk_overlap=50)
     """
-    pass  # Replace with your implementation
+    splitter = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    return splitter
 
 
 # ---------------------------------------------------------------------------
-# TODO 3: Set up embedding model
+# TODO 3: Set up embedding model - COMPLETE
 # ---------------------------------------------------------------------------
 
 def setup_embedding_model(model_name: str = "BAAI/bge-small-en-v1.5"):
@@ -130,11 +135,14 @@ def setup_embedding_model(model_name: str = "BAAI/bge-small-en-v1.5"):
         # vector = embed_model.get_text_embedding("Hello world")
         # len(vector) == 384
     """
-    pass  # Replace with your implementation
+    if HuggingFaceEmbedding is None:
+        raise ImportError("HuggingFaceEmbedding is not available. Please install llama_index with the 'huggingface' extra.")
+    embed_model = HuggingFaceEmbedding(model_name=model_name)
+    return embed_model
 
 
 # ---------------------------------------------------------------------------
-# TODO 4: Build vector index
+# TODO 4: Build vector index - COMPLETE
 # ---------------------------------------------------------------------------
 
 def build_index(documents, embed_model, splitter):
@@ -165,7 +173,13 @@ def build_index(documents, embed_model, splitter):
         index = build_index(documents, embed_model, splitter)
         print(len(index.docstore.docs))  # number of chunks created
     """
-    pass  # Replace with your implementation
+    Settings.embed_model = embed_model
+    index = VectorStoreIndex.from_documents(
+        documents,
+        transformations=[splitter],
+        show_progress=True
+    )
+    return index
 
 
 # ---------------------------------------------------------------------------
